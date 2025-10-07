@@ -24,8 +24,8 @@ app.use('/api/events', eventRoutes);
 app.use('/api/registrations', registrationRoutes);
 
 // Basic route
-app.get('/', (req, res) => {Ÿ
-  res.json({ message: 'Event Management API is running!' });
+app.get('/', (req, res) => {
+  res.json({ message: 'EventHive API is running!' });
 });
 
 // Error handling middleware
