@@ -1,5 +1,6 @@
 const jwt = require('jsonwebtoken');
 const User = require('../models/User');
+const bcrypt = require('bcrypt');
 const { validationResult } = require('express-validator');
 
 // Generate JWT token
@@ -8,14 +9,29 @@ const generateToken = (id) => {
 };
 
 // Register user
+//routes POST /api/auth/register
 const register = async (req, res) => {
   try {
-    const errors = validationResult(req);
+    const errors = validationResult(req); 
     if (!errors.isEmpty()) {
       return res.status(400).json({ errors: errors.array() });
     }
 
     const { name, email, password, role, organizationType, company } = req.body;
+    if (!name || !email || !password || !role || !organizationType || !company) {
+      return res.status(400).json({ message: 'All fields are mandatory!'});
+    }
+
+    //custom email validation using regex
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      return res.status(400).json({ message: 'Please provide a valid email address' });
+    }
+
+      // Password strength validation
+      if (!password || password.length < 8) {
+        return res.status(400).json({ message: 'Password must be at least 8 characters long' });
+      }
 
     // Check if user exists
     const existingUser = await User.findOne({ email });
@@ -23,7 +39,12 @@ const register = async (req, res) => {
       return res.status(400).json({ message: 'User already exists' });
     }
 
+    // Hash password
+    const hashedPassword = await bcrypt.hash(password, 10);
+    console.log('Hashed Password:', hashedPassword);
+
     // Create user
+    //routes POST /api/auth/register
     const user = await User.create({
       name,
       email,
@@ -53,6 +74,7 @@ const register = async (req, res) => {
 };
 
 // Login user
+//routes POST /api/auth/login
 const login = async (req, res) => {
   try {
     const errors = validationResult(req);
@@ -68,8 +90,8 @@ const login = async (req, res) => {
       return res.status(401).json({ message: 'Invalid credentials' });
     }
 
-    // Check password
-    const isMatch = await user.comparePassword(password);
+    //compare password with hashed password
+    const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) {
       return res.status(401).json({ message: 'Invalid credentials' });
     }
@@ -94,6 +116,7 @@ const login = async (req, res) => {
 };
 
 // Get current user
+//routes GET /api/auth/me
 const getMe = async (req, res) => {
   try {
     res.json({

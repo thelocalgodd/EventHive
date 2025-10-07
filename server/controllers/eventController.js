@@ -2,6 +2,7 @@ const Event = require('../models/Event');
 const { validationResult } = require('express-validator');
 
 // Create event
+//routes POST /api/events
 const createEvent = async (req, res) => {
   try {
     const errors = validationResult(req);
@@ -11,9 +12,8 @@ const createEvent = async (req, res) => {
 
     const eventData = {
       ...req.body,
-      organizer: req.user._id
+      organizer: req.user._id // only the organizer is aunthenticated user for events
     };
-
     const event = await Event.create(eventData);
     await event.populate('organizer', 'name email');
 
@@ -27,6 +27,7 @@ const createEvent = async (req, res) => {
 };
 
 // Get all events
+//routes GET /api/events
 const getAllEvents = async (req, res) => {
   try {
     const { search, category, eventType, status } = req.query;
@@ -65,6 +66,7 @@ const getAllEvents = async (req, res) => {
 };
 
 // Get event by ID
+//routes GET /api/events/:id
 const getEventById = async (req, res) => {
   try {
     const event = await Event.findById(req.params.id)
@@ -89,6 +91,7 @@ const getEventById = async (req, res) => {
 };
 
 // Update event
+//routes PUT /api/events/:id
 const updateEvent = async (req, res) => {
   try {
     const event = await Event.findById(req.params.id);
@@ -118,6 +121,7 @@ const updateEvent = async (req, res) => {
 };
 
 // Delete event
+//routes DELETE /api/events/:id
 const deleteEvent = async (req, res) => {
   try {
     const event = await Event.findById(req.params.id);
@@ -143,6 +147,7 @@ const deleteEvent = async (req, res) => {
 };
 
 // Get organizer's events
+//routes GET /api/events/my-events
 const getMyEvents = async (req, res) => {
   try {
     const events = await Event.find({ organizer: req.user._id })

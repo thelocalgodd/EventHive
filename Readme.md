@@ -56,14 +56,15 @@ cd server
 npm install
 ```
 
-Create a `.env` file in the server directory:
+Create a `.env` file in the server directory (copy from `.env.example`):
 
 ```env
-MONGO_URI=mongodb://localhost:27017/event-management
-JWT_SECRET=your_super_secret_jwt_key_here
-PORT=3001
+NODE_ENV=development
+PORT=5000
+MONGO_URI=mongodb://localhost:27017/eventhive
+JWT_SECRET=your_jwt_secret_key_here_make_it_long_and_secure
 EMAIL_USER=your_email@gmail.com
-EMAIL_PASS=your_email_password_here
+EMAIL_PASS=your_email_password_or_app_password
 ```
 
 ### 3. Frontend Setup
@@ -94,29 +95,119 @@ The application will be available at:
 - Frontend: http://localhost:5173
 - Backend API: http://localhost:3001
 
-## API Endpoints
+## API Documentation
 
-### Authentication
+### Authentication Endpoints
 
-- `POST /api/auth/register` - Register new user
-- `POST /api/auth/login` - Login user
-- `GET /api/auth/me` - Get current user (protected)
+#### POST /api/auth/register
 
-### Events
+Register a new user
 
-- `GET /api/events` - Get all events (with search/filter)
-- `GET /api/events/:id` - Get event by ID
-- `POST /api/events` - Create event (protected)
-- `PUT /api/events/:id` - Update event (protected)
-- `DELETE /api/events/:id` - Delete event (protected)
-- `GET /api/events/my-events` - Get organizer's events (protected)
+```json
+{
+  "name": "John Doe",
+  "email": "john@example.com",
+  "password": "password123",
+  "role": "attendee", // "attendee", "organizer", "admin"
+  "organizationType": "individual", // required if role is "organizer"
+  "company": "Company Name" // optional
+}
+```
 
-### Registrations
+#### POST /api/auth/login
 
-- `POST /api/registrations/:eventId` - Register for event (protected)
-- `DELETE /api/registrations/:eventId` - Cancel registration (protected)
-- `GET /api/registrations/my-registrations` - Get user's registrations (protected)
-- `GET /api/registrations/event/:eventId/attendees` - Get event attendees (protected)
+Login user
+
+```json
+{
+  "email": "john@example.com",
+  "password": "password123"
+}
+```
+
+#### GET /api/auth/me
+
+Get current user details (requires Bearer token)
+
+### Event Endpoints
+
+#### GET /api/events
+
+Get all events with optional filtering
+
+```
+Query parameters:
+- search: text search in title/description
+- category: filter by category
+- eventType: "public" or "corporate"
+- status: "draft", "published", "cancelled", "completed"
+```
+
+#### POST /api/events
+
+Create new event (protected)
+
+```json
+{
+  "title": "Tech Conference 2024",
+  "description": "Annual technology conference",
+  "category": "Technology",
+  "eventType": "public",
+  "date": "2024-12-01",
+  "time": "09:00 AM",
+  "location": "Convention Center",
+  "isVirtual": false,
+  "capacity": 100,
+  "tags": ["tech", "conference"],
+  "status": "published",
+  "accessControl": {
+    "isPrivate": false,
+    "accessCode": "CODE123",
+    "allowedDomains": ["company.com"]
+  }
+}
+```
+
+#### PUT /api/events/:id
+
+Update event (organizer only)
+
+#### DELETE /api/events/:id
+
+Delete event (organizer only)
+
+#### GET /api/events/my-events
+
+Get organizer's events (protected)
+
+### Registration Endpoints
+
+#### POST /api/registrations/:eventId
+
+Register for an event (protected)
+
+```json
+{
+  "accessCode": "CODE123" // optional, required for private events
+}
+```
+
+#### DELETE /api/registrations/:eventId
+
+Cancel registration (protected)
+
+#### GET /api/registrations/my-registrations
+
+Get user's registrations (protected)
+
+```
+Query parameters:
+- status: "confirmed", "cancelled", "waitlist"
+```
+
+#### GET /api/registrations/event/:eventId/attendees
+
+Get event attendees (organizer only)
 
 ## User Flows
 
