@@ -3,9 +3,10 @@ const Event = require('../models/Event');
 const { sendRegistrationConfirmation } = require('../utils/emailService');
 
 // Register for event
+//routes POST /api/registrations
 const registerForEvent = async (req, res) => {
   try {
-    const { eventId } = req.params;
+    const { eventId } = req.params; 
     const { accessCode } = req.body;
 
     // Check if event exists and is published
@@ -20,8 +21,8 @@ const registerForEvent = async (req, res) => {
 
     // Check if user already registered
     const existingRegistration = await Registration.findOne({
-      user: req.user._id,
-      event: eventId
+      user: req.user._id, 
+      event: eventId 
     });
 
     if (existingRegistration) {
@@ -35,25 +36,25 @@ const registerForEvent = async (req, res) => {
       }
 
       // Check email domain if allowed domains are specified
-      if (event.accessControl.allowedDomains.length > 0) {
+      if (event.accessControl.allowedDomains.length > 0) { 
         const userDomain = req.user.email.split('@')[1];
-        if (!event.accessControl.allowedDomains.includes(userDomain)) {
-          return res.status(403).json({ message: 'Email domain not allowed for this event' });
+        if (!event.accessControl.allowedDomains.includes(userDomain)) { 
+          return res.status(403).json({ message: 'Email domain not allowed for this event' }); 
         }
       }
     }
 
     // Check capacity
     let registrationStatus = 'confirmed';
-    if (event.registeredCount >= event.capacity) {
-      registrationStatus = 'waitlist';
+    if (event.registeredCount >= event.capacity) { 
+      registrationStatus = 'waitlist'; 
     }
 
     // Create registration
     const registration = await Registration.create({
-      user: req.user._id,
-      event: eventId,
-      status: registrationStatus
+      user: req.user._id, 
+      event: eventId,  
+      status: registrationStatus 
     });
 
     // Increment registered count only if confirmed
@@ -83,6 +84,7 @@ const registerForEvent = async (req, res) => {
 };
 
 // Cancel registration
+//routes DELETE /api/registrations/:eventId
 const cancelRegistration = async (req, res) => {
   try {
     const { eventId } = req.params;
@@ -117,6 +119,7 @@ const cancelRegistration = async (req, res) => {
 };
 
 // Get user's registrations
+//routes GET /api/registrations/my-registrations
 const getMyRegistrations = async (req, res) => {
   try {
     const registrations = await Registration.find({
@@ -134,6 +137,7 @@ const getMyRegistrations = async (req, res) => {
 };
 
 // Get event attendees (organizer only)
+//routes GET /api/registrations/event-attendees/:eventId
 const getEventAttendees = async (req, res) => {
   try {
     const { eventId } = req.params;
@@ -150,12 +154,12 @@ const getEventAttendees = async (req, res) => {
 
     const registrations = await Registration.find({
       event: eventId,
-      status: 'confirmed'
-    }).populate('user', 'name email');
+      status: 'confirmed' 
+    }).populate('user', 'name email'); 
 
-    const attendees = registrations.map(reg => ({
+    const attendees = registrations.map(reg => ({ 
       name: reg.user.name,
-      email: reg.user.email,
+      email: reg.user.email, 
       registrationDate: reg.registrationDate
     }));
 
