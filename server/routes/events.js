@@ -32,6 +32,6 @@ router.get('/:id', (req, res, next) => {
 router.post('/', protect, createEvent);
 router.put('/:id', protect, updateEvent);
 router.delete('/:id', protect, deleteEvent);
-router.get('/my/events', protect, getMyEvents);
+router.get('/my-events', protect, getMyEvents);
 
 module.exports = router;

@@ -76,7 +76,16 @@ const eventSchema = new mongoose.Schema({
   }
 });
 
-// Create text index for search
-eventSchema.index({ title: 'text', description: 'text' });
+// Create text search index for title and description
+eventSchema.index({ 
+  title: 'text', 
+  description: 'text' 
+});
+
+// Index for common queries
+eventSchema.index({ status: 1, date: 1 });
+eventSchema.index({ organizer: 1 });
+eventSchema.index({ category: 1 });
+eventSchema.index({ eventType: 1 });
 
 module.exports = mongoose.model('Event', eventSchema);
