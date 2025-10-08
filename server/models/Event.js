@@ -25,7 +25,18 @@ const eventSchema = new mongoose.Schema({
   },
   date: {
     type: Date,
-    required: [true, 'Date is required']
+    required: [true, 'Date is required'],
+    set: function(value) { 
+      // Handle DD/MM/YYYY format
+      if (typeof value === 'string' && value.includes('/')) {
+        const parts = value.split('/');
+        if (parts.length === 3) {
+          // Convert DD/MM/YYYY to YYYY-MM-DD
+          return new Date(`${parts[2]}-${parts[1]}-${parts[0]}`);
+        }
+      }
+      return value;
+    }
   },
   time: {
     type: String,

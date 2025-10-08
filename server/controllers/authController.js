@@ -17,9 +17,19 @@ const register = async (req, res) => {
       return res.status(400).json({ errors: errors.array() });
     }
 
-    const { name, email, password, role, organizationType, company } = req.body;
-    if (!name || !email || !password || !role || !organizationType || !company) {
-      return res.status(400).json({ message: 'All fields are mandatory!'});
+    const { name, email, password, role, organizationType } = req.body;
+    if (!name || !email || !password || !role) {
+      return res.status(400).json({ message: 'Name, email, password, role fields are mandatory!'});
+    }
+    
+    //validate organizationType if role is organizer
+    if (role === 'organizer' && !organizationType){
+      return res.status(400).json({message: 'Organization type is required for organizers'});
+    }
+
+    //prevent organizationType from being set by non organizers
+    if (role !== 'organizer' && organizationType) {
+      return res.status(400).json({ message: 'Only organizers can have an organization type' });
     }
 
     //custom email validation using regex
@@ -50,8 +60,7 @@ const register = async (req, res) => {
       email,
       password,
       role,
-      organizationType,
-      company
+      organizationType
     });
 
     const token = generateToken(user._id);
@@ -64,8 +73,7 @@ const register = async (req, res) => {
         name: user.name,
         email: user.email,
         role: user.role,
-        organizationType: user.organizationType,
-        company: user.company
+        organizationType: user.organizationType
       }
     });
   } catch (error) {
@@ -106,8 +114,7 @@ const login = async (req, res) => {
         name: user.name,
         email: user.email,
         role: user.role,
-        organizationType: user.organizationType,
-        company: user.company
+        organizationType: user.organizationType
       }
     });
   } catch (error) {

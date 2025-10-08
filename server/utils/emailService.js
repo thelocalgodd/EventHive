@@ -1,19 +1,12 @@
-const nodemailer = require('nodemailer');
+const { Resend } = require('resend');
 
-// Configure transporter
-const transporter = nodemailer.createTransport({
-  service: 'gmail',
-  auth: {
-    user: process.env.EMAIL_USER,
-    pass: process.env.EMAIL_PASS
-  }
-});
+const resend = new Resend(process.env.RESEND_API_KEY);
 
 // Send registration confirmation email
 const sendRegistrationConfirmation = async (userEmail, eventDetails) => {
   try {
-    const mailOptions = {
-      from: process.env.EMAIL_USER,
+    const result = await resend.emails.send({
+      from: 'EventHive <onboarding@resend.dev>', 
       to: userEmail,
       subject: `Registration Confirmed - ${eventDetails.title}`,
       html: `
@@ -25,19 +18,19 @@ const sendRegistrationConfirmation = async (userEmail, eventDetails) => {
             <h3 style="margin-top: 0;">Event Details:</h3>
             <p><strong>Title:</strong> ${eventDetails.title}</p>
             <p><strong>Date:</strong> ${new Date(eventDetails.date).toLocaleDateString()}</p>
-            <p><strong>Time:</strong> ${eventDetails.time}</p>
+            <p><strong>Time:</strong> ${eventDetails.time || new Date(eventDetails.date).toLocaleTimeString()}</p>
             <p><strong>Location:</strong> ${eventDetails.location}</p>
-            <p><strong>Description:</strong> ${eventDetails.description}</p>
+            ${eventDetails.description ? `<p><strong>Description:</strong> ${eventDetails.description}</p>` : ''}
           </div>
           
           <p>We look forward to seeing you at the event!</p>
           <p>Best regards,<br>Event Management Team</p>
         </div>
       `
-    };
+    });
 
-    await transporter.sendMail(mailOptions);
-    console.log('Registration confirmation email sent successfully');
+    console.log('Registration confirmation email sent successfully:', result.id);
+    return result;
   } catch (error) {
     console.error('Error sending registration confirmation email:', error);
     throw error;
@@ -47,8 +40,8 @@ const sendRegistrationConfirmation = async (userEmail, eventDetails) => {
 // Send event reminder email
 const sendEventReminder = async (userEmail, eventDetails) => {
   try {
-    const mailOptions = {
-      from: process.env.EMAIL_USER,
+    const result = await resend.emails.send({
+      from: 'EventHive <onboarding@resend.dev>',
       to: userEmail,
       subject: `Reminder: ${eventDetails.title} Tomorrow`,
       html: `
@@ -59,7 +52,7 @@ const sendEventReminder = async (userEmail, eventDetails) => {
           <div style="background-color: #f0f8ff; padding: 20px; border-radius: 5px; margin: 20px 0; border-left: 4px solid #007bff;">
             <h3 style="margin-top: 0; color: #007bff;">${eventDetails.title}</h3>
             <p><strong>Date:</strong> ${new Date(eventDetails.date).toLocaleDateString()}</p>
-            <p><strong>Time:</strong> ${eventDetails.time}</p>
+            <p><strong>Time:</strong> ${eventDetails.time || new Date(eventDetails.date).toLocaleTimeString()}</p>
             <p><strong>Location:</strong> ${eventDetails.location}</p>
           </div>
           
@@ -67,10 +60,10 @@ const sendEventReminder = async (userEmail, eventDetails) => {
           <p>Best regards,<br>Event Management Team</p>
         </div>
       `
-    };
+    });
 
-    await transporter.sendMail(mailOptions);
-    console.log('Event reminder email sent successfully');
+    console.log('Event reminder email sent successfully:', result.id);
+    return result;
   } catch (error) {
     console.error('Error sending event reminder email:', error);
     throw error;

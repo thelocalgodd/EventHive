@@ -98,12 +98,14 @@ const cancelRegistration = async (req, res) => {
       return res.status(404).json({ message: 'Registration not found' });
     }
 
-    // Update registration status
-    registration.status = 'cancelled';
-    await registration.save();
+    // Store the original status before deletion
+    const wasConfirmed = registration.status === 'confirmed';
+
+    // Delete the registration
+    await Registration.deleteOne({ _id: registration._id });
 
     // Decrement registered count if it was confirmed
-    if (registration.status === 'confirmed') {
+    if (wasConfirmed) {
       await Event.findByIdAndUpdate(eventId, {
         $inc: { registeredCount: -1 }
       });

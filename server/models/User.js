@@ -21,7 +21,7 @@ const userSchema = new mongoose.Schema({
   },
   role: {
     type: String,
-    enum: ['attendee', 'organizer', 'admin'],
+    enum: ['attendee', 'organizer'],
     default: 'attendee'
   },
   organizationType: {
@@ -30,10 +30,6 @@ const userSchema = new mongoose.Schema({
     required: function() {
       return this.role === 'organizer';
     }
-  },
-  company: {
-    type: String,
-    trim: true
   },
   createdAt: {
     type: Date,
