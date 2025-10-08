@@ -33,7 +33,7 @@ const getAllEvents = async (req, res) => {
     const { search, category, eventType, status } = req.query;
     let query = {};
 
-    // Build query
+    // Build query 
     if (search) {
       query.$text = { $search: search };
     }
