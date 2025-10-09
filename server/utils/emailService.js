@@ -6,7 +6,7 @@ const resend = new Resend(process.env.RESEND_API_KEY);
 const sendRegistrationConfirmation = async (userEmail, eventDetails) => {
   try {
     const result = await resend.emails.send({
-      from: 'EventHive <onboarding@resend.dev>', 
+      from: 'EventHive <noreply@eventhive.xyz>', 
       to: userEmail,
       subject: `Registration Confirmed - ${eventDetails.title}`,
       html: `
@@ -41,7 +41,7 @@ const sendRegistrationConfirmation = async (userEmail, eventDetails) => {
 const sendEventReminder = async (userEmail, eventDetails) => {
   try {
     const result = await resend.emails.send({
-      from: 'EventHive <onboarding@resend.dev>',
+      from: 'EventHive <noreply@eventhive.xyz>',
       to: userEmail,
       subject: `Reminder: ${eventDetails.title} Tomorrow`,
       html: `

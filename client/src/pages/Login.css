@@ -1,0 +1,163 @@
+/* ========= Global Container ========= */
+.login-container {
+  display: flex;
+  min-height: 100vh;
+  background-color: #f7f8fa;
+}
+
+/* ========= Left Side ========= */
+.login-left {
+  flex: 2;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: #eef1f6;
+}
+
+.login-left img {
+  width: 100%;
+  height: 100vh;
+  object-fit: cover;
+}
+
+/* ========= Right Side ========= */
+.login-right {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 2rem;
+}
+
+.form-wrapper {
+  background: #fff;
+  padding: 2rem;
+  width: 100%;
+  max-width: 400px;
+  border-radius: 12px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+}
+
+.form-wrapper h2 {
+  text-align: center;
+  margin-bottom: 0.5rem;
+}
+
+.form-wrapper p {
+  text-align: center;
+  color: #666;
+  font-size: 0.9rem;
+  margin-bottom: 1.5rem;
+}
+
+.form-group {
+  margin-bottom: 1rem;
+}
+
+.form-group input {
+  width: 100%;
+  padding: 0.75rem;
+  font-size: 0.95rem;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  outline: none;
+  transition: border 0.2s;
+}
+
+.form-group input:focus {
+  border-color: #4f46e5;
+}
+
+.error-text {
+  color: red;
+  font-size: 0.85rem;
+  text-align: center;
+  margin-bottom: 1rem;
+}
+
+.forgot-password {
+  text-align: right;
+  font-size: 0.85rem;
+  margin-bottom: 1rem;
+}
+
+.forgot-password a {
+  color: #4f46e5;
+  text-decoration: none;
+}
+
+.login-btn {
+  width: 100%;
+  padding: 0.75rem;
+  background: #4f46e5;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background 0.3s;
+}
+
+.login-btn:hover {
+  background: #4338ca;
+}
+
+.register-link {
+  text-align: center;
+  font-size: 0.85rem;
+  margin-top: 1rem;
+}
+
+.register-link a {
+  color: #4f46e5;
+  text-decoration: none;
+}
+
+/* ========= Responsive Styles ========= */
+
+/* Tablets */
+@media (max-width: 992px) {
+  .login-container {
+    flex-direction: column;
+  }
+
+  .login-left {
+    display: none;
+  }
+
+  .login-right {
+    width: 100%;
+    padding: 1.5rem;
+  }
+
+  .form-wrapper {
+    max-width: 450px;
+    margin: 0 auto;
+  }
+}
+
+/* Phones */
+@media (max-width: 600px) {
+  .form-wrapper {
+    padding: 1.5rem;
+    width: 90%;
+  }
+
+  .form-group input {
+    padding: 0.6rem;
+    font-size: 0.9rem;
+  }
+
+  .login-btn {
+    padding: 0.65rem;
+    font-size: 0.95rem;
+  }
+
+  .form-wrapper h2 {
+    font-size: 1.5rem;
+  }
+
+  .form-wrapper p {
+    font-size: 0.85rem;
+  }
+}
