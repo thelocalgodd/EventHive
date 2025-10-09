@@ -1,6 +1,6 @@
 import { useState } from "react";
 import "./Login.css"; // We'll create this next
-import loginImage from "../assets/login.jpg"; // ✅ Place your login image in src/assets
+import loginImage from "../assets/login.jpg"; 
 
 export default function Login() {
   const [formData, setFormData] = useState({
