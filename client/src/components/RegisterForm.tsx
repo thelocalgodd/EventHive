@@ -101,7 +101,7 @@ export function RegisterForm() {
             </div>
 
             <div className="space-y-3">
-              <Label>I am a:</Label>
+              <Label>I am an:</Label>
               <RadioGroup
                 value={formData.role}
                 onValueChange={(value: 'attendee' | 'organizer') =>
