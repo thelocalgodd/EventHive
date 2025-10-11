@@ -15,6 +15,8 @@ import { EventDetailsView } from "./components/EventDetailsView";
 import { DashboardStats } from "./components/DashboardStats";
 import { EventManagementTable } from "./components/EventManagementTable";
 import { CreateEventForm } from "./components/CreateEventForm";
+import { ForgotPasswordForm } from "./components/ForgotPasswordForm";
+import { ResetPasswordForm } from "./components/ResetPasswordForm";
 import { Button } from "./components/ui/button";
 import { useState, useEffect } from "react";
 import { useLocation } from "wouter";
@@ -404,6 +406,10 @@ function Router() {
                         {user?.role === 'organizer' ? <OrganizerDashboard /> : <AttendeeDashboard />}
                     </Route>
                     <Route path="/create-event" component={CreateEventPage} />
+                    <Route path="/forgot-password" component={ForgotPasswordForm} />
+                    <Route path="/reset-password/:token">
+                        {(params) => <ResetPasswordForm token={params.token} />}
+                    </Route>
                     <Route>
                         <div className="flex-1 flex items-center justify-center">
                             <div className="text-center">
