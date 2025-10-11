@@ -137,13 +137,7 @@ export function LoginForm() {
               {fieldErrors.password && (
                 <div className="flex flex-col gap-1">
                   <p className="text-sm text-red-500">{fieldErrors.password}</p>
-                  {fieldErrors.password.includes('Incorrect password') && (
-                    <Link href="/forgot-password">
-                      <span className="text-xs text-primary hover:underline cursor-pointer">
-                        Forgot your password? →
-                      </span>
-                    </Link>
-                  )}
+                  {fieldErrors.password.includes('Incorrect password')}
                 </div>
               )}
             </div>
