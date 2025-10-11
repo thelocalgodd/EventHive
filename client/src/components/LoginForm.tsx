@@ -12,13 +12,25 @@ export function LoginForm() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [fieldErrors, setFieldErrors] = useState({
+    email: '',
+    password: '',
+  });
   const { login } = useAuth();
   const [, setLocation] = useLocation();
   const { toast } = useToast();
 
+  const clearFieldErrors = () => {
+    setFieldErrors({
+      email: '',
+      password: '',
+    });
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
+    clearFieldErrors();
 
     try {
       await login({ email, password });
@@ -28,9 +40,34 @@ export function LoginForm() {
       });
       setLocation('/dashboard');
     } catch (error) {
+      let errorMessage = "Something went wrong. Please try again.";
+      let newFieldErrors = { email: '', password: '' };
+      
+      if (error instanceof Error) {
+        const message = error.message.toLowerCase();
+        
+        if (message.includes('email') || message.includes('user not found') || message.includes('account not found') || message.includes('no user found')) {
+          errorMessage = "No account found with this email address.";
+          newFieldErrors.email = "No account found with this email";
+        } else if (message.includes('password') || message.includes('invalid credentials') || message.includes('incorrect password') || message.includes('wrong password')) {
+          errorMessage = "Incorrect password. Please try again.";
+          newFieldErrors.password = "Incorrect password";
+        } else if (message.includes('blocked') || message.includes('suspended') || message.includes('disabled')) {
+          errorMessage = "Your account has been suspended. Please contact support.";
+          newFieldErrors.email = "Account suspended";
+        } else if (message.includes('not verified') || message.includes('verify')) {
+          errorMessage = "Please verify your email address before signing in.";
+          newFieldErrors.email = "Email not verified";
+        } else {
+          errorMessage = error.message;
+        }
+
+        setFieldErrors(newFieldErrors);
+      }
+      
       toast({
         title: "Login failed",
-        description: error instanceof Error ? error.message : "Invalid credentials",
+        description: errorMessage,
         variant: "destructive",
       });
     } finally {
@@ -60,10 +97,26 @@ export function LoginForm() {
                 type="email"
                 placeholder="your@email.com"
                 value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                onChange={(e) => {
+                  setEmail(e.target.value);
+                  if (fieldErrors.email) setFieldErrors({ ...fieldErrors, email: '' });
+                }}
                 required
                 data-testid="input-email"
+                className={fieldErrors.email ? "border-red-500" : ""}
               />
+              {fieldErrors.email && (
+                <div className="flex flex-col gap-1">
+                  <p className="text-sm text-red-500">{fieldErrors.email}</p>
+                  {fieldErrors.email.includes('No account found') && (
+                    <Link href="/register">
+                      <span className="text-xs text-primary hover:underline cursor-pointer">
+                        Create an account instead →
+                      </span>
+                    </Link>
+                  )}
+                </div>
+              )}
             </div>
 
             <div className="space-y-2">
@@ -73,10 +126,34 @@ export function LoginForm() {
                 type="password"
                 placeholder="••••••••"
                 value={password}
-                onChange={(e) => setPassword(e.target.value)}
+                onChange={(e) => {
+                  setPassword(e.target.value);
+                  if (fieldErrors.password) setFieldErrors({ ...fieldErrors, password: '' });
+                }}
                 required
                 data-testid="input-password"
+                className={fieldErrors.password ? "border-red-500" : ""}
               />
+              {fieldErrors.password && (
+                <div className="flex flex-col gap-1">
+                  <p className="text-sm text-red-500">{fieldErrors.password}</p>
+                  {fieldErrors.password.includes('Incorrect password') && (
+                    <Link href="/forgot-password">
+                      <span className="text-xs text-primary hover:underline cursor-pointer">
+                        Forgot your password? →
+                      </span>
+                    </Link>
+                  )}
+                </div>
+              )}
+            </div>
+
+            <div className="flex justify-end">
+              <Link href="/forgot-password">
+                <span className="text-sm text-primary hover:underline cursor-pointer">
+                  Forgot password?
+                </span>
+              </Link>
             </div>
           </CardContent>
 

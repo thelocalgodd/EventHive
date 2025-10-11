@@ -19,13 +19,29 @@ export function RegisterForm() {
     role: 'attendee',
   });
   const [isLoading, setIsLoading] = useState(false);
+  const [fieldErrors, setFieldErrors] = useState({
+    name: '',
+    email: '',
+    password: '',
+    organizationType: '',
+  });
   const { register } = useAuth();
   const [, setLocation] = useLocation();
   const { toast } = useToast();
 
+  const clearFieldErrors = () => {
+    setFieldErrors({
+      name: '',
+      email: '',
+      password: '',
+      organizationType: '',
+    });
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
+    clearFieldErrors();
 
     try {
       await register(formData);
@@ -35,9 +51,40 @@ export function RegisterForm() {
       });
       setLocation('/dashboard');
     } catch (error) {
+      let errorMessage = "Failed to create account. Please try again.";
+      let newFieldErrors = { name: '', email: '', password: '', organizationType: '' };
+
+      if (error instanceof Error) {
+        const message = error.message.toLowerCase();
+        
+        // Handle specific validation errors
+        if (message.includes('email already exists') || message.includes('email is already registered') || message.includes('user already exists')) {
+          errorMessage = "An account with this email already exists. Please sign in instead.";
+          newFieldErrors.email = "This email is already registered";
+        } else if (message.includes('invalid email') || message.includes('email format')) {
+          errorMessage = "Please enter a valid email address.";
+          newFieldErrors.email = "Invalid email format";
+        } else if (message.includes('password') && (message.includes('weak') || message.includes('short') || message.includes('minimum'))) {
+          errorMessage = "Password must be at least 8 characters long and contain a mix of letters and numbers.";
+          newFieldErrors.password = "Password is too weak";
+        } else if (message.includes('name') && (message.includes('required') || message.includes('invalid'))) {
+          errorMessage = "Please enter a valid full name.";
+          newFieldErrors.name = "Name is required";
+        } else if (message.includes('organization type') || message.includes('org type')) {
+          errorMessage = "Please select an organization type.";
+          newFieldErrors.organizationType = "Organization type is required";
+        } else if (message.includes('validation') || message.includes('invalid')) {
+          errorMessage = "Please check all fields and try again.";
+        } else {
+          errorMessage = error.message;
+        }
+
+        setFieldErrors(newFieldErrors);
+      }
+      
       toast({
         title: "Registration failed",
-        description: error instanceof Error ? error.message : "Failed to create account",
+        description: errorMessage,
         variant: "destructive",
       });
     } finally {
@@ -66,10 +113,15 @@ export function RegisterForm() {
                 id="name"
                 placeholder="John Doe"
                 value={formData.name}
-                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                onChange={(e) => {
+                  setFormData({ ...formData, name: e.target.value });
+                  if (fieldErrors.name) setFieldErrors({ ...fieldErrors, name: '' });
+                }}
                 required
                 data-testid="input-name"
+                className={fieldErrors.name ? "border-red-500" : ""}
               />
+              {fieldErrors.name && <p className="text-sm text-red-500">{fieldErrors.name}</p>}
             </div>
 
             <div className="space-y-2">
@@ -79,10 +131,26 @@ export function RegisterForm() {
                 type="email"
                 placeholder="your@email.com"
                 value={formData.email}
-                onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                onChange={(e) => {
+                  setFormData({ ...formData, email: e.target.value });
+                  if (fieldErrors.email) setFieldErrors({ ...fieldErrors, email: '' });
+                }}
                 required
                 data-testid="input-email"
+                className={fieldErrors.email ? "border-red-500" : ""}
               />
+              {fieldErrors.email && (
+                <div className="flex flex-col gap-1">
+                  <p className="text-sm text-red-500">{fieldErrors.email}</p>
+                  {fieldErrors.email.includes('already registered') && (
+                    <Link href="/login">
+                      <span className="text-xs text-primary hover:underline cursor-pointer">
+                        Sign in instead →
+                      </span>
+                    </Link>
+                  )}
+                </div>
+              )}
             </div>
 
             <div className="space-y-2">
@@ -92,12 +160,17 @@ export function RegisterForm() {
                 type="password"
                 placeholder="••••••••"
                 value={formData.password}
-                onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                onChange={(e) => {
+                  setFormData({ ...formData, password: e.target.value });
+                  if (fieldErrors.password) setFieldErrors({ ...fieldErrors, password: '' });
+                }}
                 required
                 minLength={8}
                 data-testid="input-password"
+                className={fieldErrors.password ? "border-red-500" : ""}
               />
               <p className="text-xs text-muted-foreground">Must be at least 8 characters</p>
+              {fieldErrors.password && <p className="text-sm text-red-500">{fieldErrors.password}</p>}
             </div>
 
             <div className="space-y-3">
@@ -130,11 +203,16 @@ export function RegisterForm() {
                 <Label htmlFor="orgType">Organization Type</Label>
                 <Select
                   value={formData.organizationType}
-                  onValueChange={(value: 'individual' | 'corporate') =>
-                    setFormData({ ...formData, organizationType: value })
-                  }
+                  onValueChange={(value: 'individual' | 'corporate') => {
+                    setFormData({ ...formData, organizationType: value });
+                    if (fieldErrors.organizationType) setFieldErrors({ ...fieldErrors, organizationType: '' });
+                  }}
                 >
-                  <SelectTrigger id="orgType" data-testid="select-org-type">
+                  <SelectTrigger 
+                    id="orgType" 
+                    data-testid="select-org-type"
+                    className={fieldErrors.organizationType ? "border-red-500" : ""}
+                  >
                     <SelectValue placeholder="Select organization type" />
                   </SelectTrigger>
                   <SelectContent>
@@ -142,6 +220,7 @@ export function RegisterForm() {
                     <SelectItem value="corporate">Corporate</SelectItem>
                   </SelectContent>
                 </Select>
+                {fieldErrors.organizationType && <p className="text-sm text-red-500">{fieldErrors.organizationType}</p>}
               </div>
             )}
           </CardContent>
