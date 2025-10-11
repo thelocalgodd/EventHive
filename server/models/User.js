@@ -31,6 +31,12 @@ const userSchema = new mongoose.Schema({
       return this.role === 'organizer';
     }
   },
+  resetPasswordToken: {
+    type: String,
+  },
+  resetPasswordExpires: {
+    type: Date,
+  },
   createdAt: {
     type: Date,
     default: Date.now
