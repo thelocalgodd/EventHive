@@ -51,23 +51,6 @@ export function Hero({ onSearch }: HeroProps) {
               </Button>
             </div>
           </form>
-
-          <div className="flex flex-wrap justify-center gap-4 pt-4">
-            <Button 
-              variant="outline" 
-              className="backdrop-blur-md bg-white/10 border-white/20 text-white hover:bg-white/20"
-              data-testid="button-browse-events"
-            >
-              Browse Events
-            </Button>
-            <Button 
-              variant="outline" 
-              className="backdrop-blur-md bg-white/10 border-white/20 text-white hover:bg-white/20"
-              data-testid="button-create-event"
-            >
-              Create Event
-            </Button>
-          </div>
         </div>
       </div>
     </div>
