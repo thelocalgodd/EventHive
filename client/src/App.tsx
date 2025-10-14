@@ -17,6 +17,7 @@ import { EventManagementTable } from "./components/EventManagementTable";
 import { CreateEventForm } from "./components/CreateEventForm";
 import { ForgotPasswordForm } from "./components/ForgotPasswordForm";
 import { ResetPasswordForm } from "./components/ResetPasswordForm";
+import { About } from "./pages/About";
 import { Button } from "./components/ui/button";
 import { useState, useEffect } from "react";
 import { useLocation } from "wouter";
@@ -396,6 +397,7 @@ function Router() {
                     <Route path="/" component={HomePage} />
                     <Route path="/events" component={EventsPage} />
                     <Route path="/events/:id" component={EventDetailsPage} />
+                    <Route path="/about" component={About} />
                     <Route path="/login">
                         <LoginForm />
                     </Route>
