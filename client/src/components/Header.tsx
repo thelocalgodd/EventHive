@@ -17,8 +17,13 @@ interface HeaderProps {
 }
 
 export function Header({ isAuthenticated = false, userRole, userName, onLogout }: HeaderProps) {
-  const [location] = useLocation();
+  const [location, setLocation] = useLocation();
   const [mobileOpen, setMobileOpen] = useState(false);
+
+  const handleLogout = () => {
+    onLogout?.();
+    setLocation('/login');
+  };
 
   const navItems = [
     { label: 'Events', path: '/events' },
@@ -83,7 +88,7 @@ export function Header({ isAuthenticated = false, userRole, userName, onLogout }
                 <Button
                   variant="ghost"
                   size="icon"
-                  onClick={onLogout}
+                  onClick={handleLogout}
                   data-testid="button-logout"
                 >
                   <LogOut className="h-4 w-4" />
@@ -118,7 +123,7 @@ export function Header({ isAuthenticated = false, userRole, userName, onLogout }
                       <Button
                         variant="ghost"
                         onClick={() => {
-                          onLogout?.();
+                          handleLogout();
                           setMobileOpen(false);
                         }}
                         className="justify-start"

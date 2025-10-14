@@ -8,13 +8,14 @@ import { Switch } from "@/components/ui/switch";
 import { Calendar } from "lucide-react";
 import { useState } from "react";
 import { useLocation } from "wouter";
-import { useCreateEvent } from "../hooks/useEvents";
+import { useCreateEvent } from "../hooks/useEvents"; 
 import { useToast } from "@/hooks/use-toast";
 import type { CreateEventForm as CreateEventFormType } from "../types/api";
 
 interface CreateEventFormProps {
   onSubmit?: (data: EventFormData) => void;
   initialData?: Partial<EventFormData>;
+  isLoading?: boolean; // Add this prop
 }
 
 export interface EventFormData {
@@ -43,7 +44,7 @@ const categories = [
   'Networking',
 ];
 
-export function CreateEventForm({ onSubmit, initialData }: CreateEventFormProps) {
+export function CreateEventForm({ onSubmit, initialData, isLoading }: CreateEventFormProps) {
   const [formData, setFormData] = useState<EventFormData>({
     title: initialData?.title || '',
     description: initialData?.description || '',
@@ -309,10 +310,10 @@ export function CreateEventForm({ onSubmit, initialData }: CreateEventFormProps)
               <Button
                 type="submit"
                 className="flex-1"
-                disabled={createEventMutation.isPending}
+                disabled={createEventMutation.isPending || isLoading}
                 data-testid="button-submit"
               >
-                {createEventMutation.isPending ? 'Saving...' : initialData ? 'Update Event' : 'Create Event'}
+                {(createEventMutation.isPending || isLoading) ? 'Saving...' : initialData ? 'Update Event' : 'Create Event'}
               </Button>
               <Button
                 type="button"
