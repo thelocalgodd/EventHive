@@ -1,5 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiClient } from "../lib/api";
+import { useAuth } from "../contexts/AuthContext";
 import type { EventFilters, CreateEventForm } from "../types/api";
 
 // Query keys
@@ -32,9 +33,12 @@ export function useEvent(id: string) {
 
 // Get organizer's events
 export function useMyEvents() {
+  const { user } = useAuth();
+
   return useQuery({
     queryKey: eventKeys.myEvents(),
     queryFn: () => apiClient.getMyEvents(),
+    enabled: user?.role === 'organizer',
   });
 }
 

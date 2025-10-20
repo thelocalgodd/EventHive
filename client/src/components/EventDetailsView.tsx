@@ -2,8 +2,10 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { Calendar, MapPin, Users, Clock, Globe, Shield } from "lucide-react";
+import { Calendar, MapPin, Users, Clock, Globe, Shield, Trash2 } from "lucide-react";
 import { format } from "date-fns";
+
+type EventAction = 'register' | 'cancel-registration' | 'delete' | 'waitlist' | 'login-required' | 'organizer-no-register';
 
 interface EventDetailsViewProps {
   event: {
@@ -28,19 +30,85 @@ interface EventDetailsViewProps {
   };
   isRegistered?: boolean;
   canRegister?: boolean;
+  eventAction: EventAction;
   onRegister?: () => void;
   onCancelRegistration?: () => void;
+  onDeleteEvent?: () => void;
 }
 
 export function EventDetailsView({
   event,
   isRegistered = false,
   canRegister = true,
+  eventAction,
   onRegister,
   onCancelRegistration,
+  onDeleteEvent,
 }: EventDetailsViewProps) {
   const spotsLeft = event.capacity - event.registeredCount;
   const isFull = spotsLeft === 0;
+
+  const renderActionButton = () => {
+    switch (eventAction) {
+      case 'delete':
+        return (
+          <Button 
+            variant="destructive" 
+            className="w-full" 
+            onClick={onDeleteEvent}
+            data-testid="button-delete-event"
+          >
+            <Trash2 className="h-4 w-4 mr-2" />
+            Delete This Event
+          </Button>
+        );
+      
+      case 'cancel-registration':
+        return (
+          <Button
+            variant="outline"
+            className="w-full"
+            onClick={onCancelRegistration}
+            data-testid="button-cancel-registration"
+          >
+            Cancel Registration
+          </Button>
+        );
+      
+      case 'waitlist':
+        return (
+          <Button className="w-full" disabled data-testid="button-join-waitlist">
+            Join Waitlist
+          </Button>
+        );
+      
+      case 'register':
+        return (
+          <Button className="w-full" onClick={onRegister} data-testid="button-register">
+            Register for Event
+          </Button>
+        );
+      
+      case 'login-required':
+        return (
+          <Button className="w-full" disabled>
+            Login to Register
+          </Button>
+        );
+      
+      case 'organizer-no-register':
+        return (
+          <div className="w-full text-center p-3 bg-muted rounded-lg">
+            <p className="text-sm text-muted-foreground">
+              As an organizer, you can only manage your own events
+            </p>
+          </div>
+        );
+      
+      default:
+        return null;
+    }
+  };
 
   return (
     <div className="max-w-6xl mx-auto space-y-8">
@@ -159,28 +227,7 @@ export function EventDetailsView({
               </div>
 
               <div className="pt-4 border-t space-y-2">
-                {isRegistered ? (
-                  <Button
-                    variant="outline"
-                    className="w-full"
-                    onClick={onCancelRegistration}
-                    data-testid="button-cancel-registration"
-                  >
-                    Cancel Registration
-                  </Button>
-                ) : isFull ? (
-                  <Button className="w-full" disabled data-testid="button-join-waitlist">
-                    Join Waitlist
-                  </Button>
-                ) : canRegister ? (
-                  <Button className="w-full" onClick={onRegister} data-testid="button-register">
-                    Register for Event
-                  </Button>
-                ) : (
-                  <Button className="w-full" disabled>
-                    Login to Register
-                  </Button>
-                )}
+                {renderActionButton()}
               </div>
             </CardContent>
           </Card>
