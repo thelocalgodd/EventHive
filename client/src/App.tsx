@@ -21,7 +21,8 @@ import { About } from "./pages/About";
 import { Button } from "./components/ui/button";
 import { useState, useEffect } from "react";
 import { useLocation } from "wouter";
-import { useEvents, useEvent, useMyEvents } from "./hooks/useEvents";
+import { useToast } from "./hooks/use-toast";
+import { useEvents, useEvent, useMyEvents, useDeleteEvent } from "./hooks/useEvents";
 import { useMyRegistrations, useRegisterForEvent, useCancelRegistration } from "./hooks/useRegistrations";
 import type { EventFilters as EventFiltersType } from "./types/api";
 
@@ -100,32 +101,40 @@ function HomePage() {
 }
 
 function EventsPage() {
-    const [, setLocation] = useLocation();
+    const { user } = useAuth();
     const [filters, setFilters] = useState<EventFiltersType>({});
-    const { data: eventsData, isLoading } = useEvents(filters);
+    const [, setLocation] = useLocation();
+
+    // For organizers, use useMyEvents to get only their events
+    // For attendees, use useEvents to get all available events
+    const { data: allEventsData, isLoading: allEventsLoading } = useEvents(filters);
+    const { data: myEventsData, isLoading: myEventsLoading } = useMyEvents();
+
+    const isLoading = user?.role === 'organizer' ? myEventsLoading : allEventsLoading;
+    const eventsData = user?.role === 'organizer' ? myEventsData : allEventsData;
     const events = eventsData?.events || [];
 
-    // Parse URL search params
-    useEffect(() => {
-        const urlParams = new URLSearchParams(window.location.search);
-        const search = urlParams.get('search');
-        if (search) {
-            setFilters(prev => ({ ...prev, search }));
-        }
-    }, []);
-
-    const handleFilterChange = (newFilters: EventFiltersType) => {
-        setFilters(newFilters);
+    const handleFilterChange = (newFilters: Partial<EventFiltersType>) => {
+        setFilters(prev => ({ ...prev, ...newFilters }));
     };
 
     return (
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
             <div>
-                <h1 className="text-3xl font-bold mb-2">Discover Events</h1>
-                <p className="text-muted-foreground">Find events that match your interests</p>
+                <h1 className="text-3xl font-bold mb-2">
+                    {user?.role === 'organizer' ? 'My Events' : 'Discover Events'}
+                </h1>
+                <p className="text-muted-foreground">
+                    {user?.role === 'organizer' 
+                        ? 'Manage and view your created events' 
+                        : 'Find amazing events happening around you'
+                    }
+                </p>
             </div>
 
-            <EventFilters onFilterChange={handleFilterChange} />
+            {user?.role !== 'organizer' && (
+                <EventFilters onFilterChange={handleFilterChange} />
+            )}
 
             {isLoading ? (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -160,7 +169,20 @@ function EventsPage() {
 
             {!isLoading && events.length === 0 && (
                 <div className="text-center py-12">
-                    <p className="text-muted-foreground">No events found matching your filters</p>
+                    <p className="text-muted-foreground">
+                        {user?.role === 'organizer' 
+                            ? 'You haven\'t created any events yet' 
+                            : 'No events found matching your filters'
+                        }
+                    </p>
+                    {user?.role === 'organizer' && (
+                        <Button 
+                            className="mt-4" 
+                            onClick={() => setLocation('/create-event')}
+                        >
+                            Create Your First Event
+                        </Button>
+                    )}
                 </div>
             )}
         </div>
@@ -169,10 +191,13 @@ function EventsPage() {
 
 function EventDetailsPage({ params }: { params: { id: string } }) {
     const { user } = useAuth();
+    const [, setLocation] = useLocation();
     const { data: eventData, isLoading } = useEvent(params.id);
     const { data: registrationsData } = useMyRegistrations();
     const registerMutation = useRegisterForEvent();
     const cancelMutation = useCancelRegistration();
+    const deleteMutation = useDeleteEvent();
+    const { toast } = useToast();
 
     if (isLoading) {
         return (
@@ -198,15 +223,33 @@ function EventDetailsPage({ params }: { params: { id: string } }) {
     }
 
     const event = eventData.event;
+    const isEventOrganizer = user && event.organizer._id === user.id;
     const isRegistered = registrationsData?.registrations?.some(
         reg => reg.event._id === event._id
     ) || false;
 
     const handleRegister = async () => {
-        if (!user) return;
+        if (!user) {
+            setLocation('/login');
+            return;
+        }
+
+        // Prevent organizers from registering for any events
+        if (user.role === 'organizer') {
+            toast({
+                title: "Action not allowed",
+                description: "Organizers cannot register for events. You can only manage your own events.",
+                variant: "destructive",
+            });
+            return;
+        }
 
         try {
             await registerMutation.mutateAsync({ eventId: event._id });
+            toast({
+                title: "Registration successful!",
+                description: "You have been registered for this event.",
+            });
         } catch (error) {
             console.error('Registration failed:', error);
         }
@@ -215,10 +258,63 @@ function EventDetailsPage({ params }: { params: { id: string } }) {
     const handleCancelRegistration = async () => {
         try {
             await cancelMutation.mutateAsync(event._id);
+            toast({
+                title: "Registration cancelled",
+                description: "Your registration has been cancelled.",
+            });
         } catch (error) {
             console.error('Cancellation failed:', error);
         }
     };
+
+    const handleDeleteEvent = async () => {
+        if (!window.confirm('Are you sure you want to delete this event? This action cannot be undone.')) {
+            return;
+        }
+
+        try {
+            await deleteMutation.mutateAsync(event._id);
+            toast({
+                title: "Event deleted",
+                description: "Your event has been successfully deleted.",
+            });
+            setLocation('/events');
+        } catch (error) {
+            console.error('Delete failed:', error);
+            toast({
+                title: "Delete failed",
+                description: "Failed to delete the event. Please try again.",
+                variant: "destructive",
+            });
+        }
+    };
+
+    // Determine which action to show based on user role and relationship to event
+    const getEventAction = () => {
+        if (!user) {
+            return 'login-required';
+        }
+        
+        if (isEventOrganizer) {
+            return 'delete';
+        }
+        
+        if (user.role === 'organizer') {
+            return 'organizer-no-register';
+        }
+        
+        if (isRegistered) {
+            return 'cancel-registration';
+        }
+        
+        if (event.registeredCount >= event.capacity) {
+            return 'waitlist';
+        }
+        
+        return 'register';
+    };
+
+    const eventAction = getEventAction();
 
     return (
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -244,9 +340,11 @@ function EventDetailsPage({ params }: { params: { id: string } }) {
                     },
                 }}
                 isRegistered={isRegistered}
-                canRegister={!!user && event.status === 'published'}
+                canRegister={eventAction === 'register'}
+                eventAction={eventAction}
                 onRegister={handleRegister}
                 onCancelRegistration={handleCancelRegistration}
+                onDeleteEvent={handleDeleteEvent}
             />
         </div>
     );
@@ -312,6 +410,8 @@ function AttendeeDashboard() {
 function OrganizerDashboard() {
     const [, setLocation] = useLocation();
     const { data: eventsData, isLoading } = useMyEvents();
+    const deteMutation = useDeleteEvent();
+    const { toast } = useToast();
     const events = eventsData?.events || [];
 
     const organizerEvents = events.map(e => ({
@@ -322,6 +422,8 @@ function OrganizerDashboard() {
         registeredCount: e.registeredCount,
         capacity: e.capacity,
     }));
+
+
 
     return (
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
