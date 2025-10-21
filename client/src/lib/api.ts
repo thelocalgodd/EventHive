@@ -118,7 +118,7 @@ class ApiClient {
     return this.request<EventResponse>(`/events/${id}`);
   }
 
-  async createEvent(eventData: CreateEventForm): Promise<EventResponse> {
+  async createEvent(eventData: any): Promise<EventResponse> {
     return this.request<EventResponse>("/events", {
       method: "POST",
       body: JSON.stringify(eventData),
@@ -127,7 +127,7 @@ class ApiClient {
 
   async updateEvent(
     id: string,
-    eventData: Partial<CreateEventForm>
+    eventData: any
   ): Promise<EventResponse> {
     return this.request<EventResponse>(`/events/${id}`, {
       method: "PUT",

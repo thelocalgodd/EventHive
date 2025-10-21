@@ -22,524 +22,794 @@ import { Button } from "./components/ui/button";
 import { useState, useEffect } from "react";
 import { useLocation } from "wouter";
 import { useToast } from "./hooks/use-toast";
-import { useEvents, useEvent, useMyEvents, useDeleteEvent } from "./hooks/useEvents";
-import { useMyRegistrations, useRegisterForEvent, useCancelRegistration } from "./hooks/useRegistrations";
+import {
+  useEvents,
+  useEvent,
+  useMyEvents,
+  useDeleteEvent,
+  useUpdateEvent,
+} from "./hooks/useEvents";
+import {
+  useMyRegistrations,
+  useRegisterForEvent,
+  useCancelRegistration,
+  useEventAttendees,
+} from "./hooks/useRegistrations";
 import type { EventFilters as EventFiltersType } from "./types/api";
 
 // Import event images
-import businessEvent from '../../attached_assets/generated_images/Business_conference_presentation_event_e6f329f2.png';
-import concertEvent from '../../attached_assets/generated_images/Live_music_concert_event_aacc7e97.png';
-import techWorkshop from '../../attached_assets/generated_images/Tech_workshop_training_session_a37358c6.png';
-import networkingEvent from '../../attached_assets/generated_images/Corporate_networking_mixer_event_c61b902e.png';
-import artEvent from '../../attached_assets/generated_images/Art_gallery_exhibition_event_0dcb9354.png';
+import businessEvent from "../../attached_assets/generated_images/Business_conference_presentation_event_e6f329f2.png";
+import concertEvent from "../../attached_assets/generated_images/Live_music_concert_event_aacc7e97.png";
+import techWorkshop from "../../attached_assets/generated_images/Tech_workshop_training_session_a37358c6.png";
+import networkingEvent from "../../attached_assets/generated_images/Corporate_networking_mixer_event_c61b902e.png";
+import artEvent from "../../attached_assets/generated_images/Art_gallery_exhibition_event_0dcb9354.png";
 
 function HomePage() {
-    const [, setLocation] = useLocation();
-    const { data: eventsData, isLoading } = useEvents({ status: 'published' });
-    const featuredEvents = eventsData?.events?.slice(0, 3) || [];
+  const [, setLocation] = useLocation();
+  const { data: eventsData, isLoading } = useEvents({ status: "published" });
+  const featuredEvents = eventsData?.events?.slice(0, 3) || [];
 
-    return (
-        <div className="min-h-screen flex flex-col">
-            <div className="flex-1">
-                <Hero onSearch={(query) => {
-                    setLocation(`/events?search=${encodeURIComponent(query)}`);
-                }} />
+  return (
+    <div className="min-h-screen flex flex-col">
+      <div className="flex-1">
+        <Hero
+          onSearch={(query) => {
+            setLocation(`/events?search=${encodeURIComponent(query)}`);
+          }}
+        />
 
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 space-y-16">
-                    <section>
-                        <div className="text-center mb-12">
-                            <h2 className="text-3xl font-bold mb-4">Featured Events</h2>
-                            <p className="text-muted-foreground">Discover popular events happening soon</p>
-                        </div>
-                        {isLoading ? (
-                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                                {[1, 2, 3].map((i) => (
-                                    <div key={i} className="h-64 bg-muted animate-pulse rounded-lg" />
-                                ))}
-                            </div>
-                        ) : (
-                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                                {featuredEvents.map((event) => (
-                                    <EventCard
-                                        key={event._id}
-                                        id={event._id}
-                                        title={event.title}
-                                        description={event.description}
-                                        category={event.category}
-                                        eventType={event.eventType}
-                                        date={new Date(event.date)}
-                                        time={event.time}
-                                        location={event.location}
-                                        capacity={event.capacity}
-                                        registeredCount={event.registeredCount}
-                                        imageUrl={event.image || businessEvent}
-                                        isVirtual={event.isVirtual}
-                                        organizerName={event.organizer.name}
-                                        onRegister={() => setLocation(`/events/${event._id}`)}
-                                        onViewDetails={() => setLocation(`/events/${event._id}`)}
-                                    />
-                                ))}
-                            </div>
-                        )}
-                    </section>
-
-                    <section className="bg-gradient-to-br from-primary/10 to-chart-2/10 rounded-2xl p-8 sm:p-12">
-                        <div className="max-w-3xl mx-auto text-center space-y-6">
-                            <h2 className="text-3xl font-bold">For Event Organizers</h2>
-                            <p className="text-lg text-muted-foreground">
-                                Create and manage amazing events with our powerful platform. Track registrations, manage attendees, and grow your community.
-                            </p>
-                            <Button size="lg" onClick={() => setLocation('/register')} data-testid="button-get-started">
-                                Get Started
-                            </Button>
-                        </div>
-                    </section>
-                </div>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 space-y-16">
+          <section>
+            <div className="text-center mb-12">
+              <h2 className="text-3xl font-bold mb-4">Featured Events</h2>
+              <p className="text-muted-foreground">
+                Discover popular events happening soon
+              </p>
             </div>
+            {isLoading ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {[1, 2, 3].map((i) => (
+                  <div
+                    key={i}
+                    className="h-64 bg-muted animate-pulse rounded-lg"
+                  />
+                ))}
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {featuredEvents.map((event) => (
+                  <EventCard
+                    key={event._id}
+                    id={event._id}
+                    title={event.title}
+                    description={event.description}
+                    category={event.category}
+                    eventType={event.eventType}
+                    date={new Date(event.date)}
+                    time={event.time}
+                    location={event.location}
+                    capacity={event.capacity}
+                    registeredCount={event.registeredCount}
+                    imageUrl={event.image || businessEvent}
+                    isVirtual={event.isVirtual}
+                    organizerName={event.organizer.name}
+                    onRegister={() => setLocation(`/events/${event._id}`)}
+                    onViewDetails={() => setLocation(`/events/${event._id}`)}
+                    showRegisterButton={true}
+                  />
+                ))}
+              </div>
+            )}
+          </section>
+
+          <section className="bg-gradient-to-br from-primary/10 to-chart-2/10 rounded-2xl p-8 sm:p-12">
+            <div className="max-w-3xl mx-auto text-center space-y-6">
+              <h2 className="text-3xl font-bold">For Event Organizers</h2>
+              <p className="text-lg text-muted-foreground">
+                Create and manage amazing events with our powerful platform.
+                Track registrations, manage attendees, and grow your community.
+              </p>
+              <Button
+                size="lg"
+                onClick={() => setLocation("/register")}
+                data-testid="button-get-started"
+              >
+                Get Started
+              </Button>
+            </div>
+          </section>
         </div>
-    );
+      </div>
+    </div>
+  );
 }
 
 function EventsPage() {
-    const { user } = useAuth();
-    const [filters, setFilters] = useState<EventFiltersType>({});
-    const [, setLocation] = useLocation();
+  const { user } = useAuth();
+  const [filters, setFilters] = useState<EventFiltersType>({});
+  const [, setLocation] = useLocation();
 
-    // For organizers, use useMyEvents to get only their events
-    // For attendees, use useEvents to get all available events
-    const { data: allEventsData, isLoading: allEventsLoading } = useEvents(filters);
-    const { data: myEventsData, isLoading: myEventsLoading } = useMyEvents();
+  // For organizers, use useMyEvents to get only their events
+  // For attendees, use useEvents to get all available events
+  const { data: allEventsData, isLoading: allEventsLoading } =
+    useEvents(filters);
+  const { data: myEventsData, isLoading: myEventsLoading } = useMyEvents();
 
-    const isLoading = user?.role === 'organizer' ? myEventsLoading : allEventsLoading;
-    const eventsData = user?.role === 'organizer' ? myEventsData : allEventsData;
-    const events = eventsData?.events || [];
+  const isLoading =
+    user?.role === "organizer" ? myEventsLoading : allEventsLoading;
+  const eventsData = user?.role === "organizer" ? myEventsData : allEventsData;
+  const events = eventsData?.events || [];
 
-    const handleFilterChange = (newFilters: Partial<EventFiltersType>) => {
-        setFilters(prev => ({ ...prev, ...newFilters }));
-    };
+  const handleFilterChange = (newFilters: Partial<EventFiltersType>) => {
+    setFilters((prev) => ({ ...prev, ...newFilters }));
+  };
 
-    return (
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
-            <div>
-                <h1 className="text-3xl font-bold mb-2">
-                    {user?.role === 'organizer' ? 'My Events' : 'Discover Events'}
-                </h1>
-                <p className="text-muted-foreground">
-                    {user?.role === 'organizer' 
-                        ? 'Manage and view your created events' 
-                        : 'Find amazing events happening around you'
-                    }
-                </p>
-            </div>
+  return (
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
+      <div>
+        <h1 className="text-3xl font-bold mb-2">
+          {user?.role === "organizer" ? "My Events" : "Discover Events"}
+        </h1>
+        <p className="text-muted-foreground">
+          {user?.role === "organizer"
+            ? "Manage and view your created events"
+            : "Find amazing events happening around you"}
+        </p>
+      </div>
 
-            {user?.role !== 'organizer' && (
-                <EventFilters onFilterChange={handleFilterChange} />
-            )}
+      {user?.role !== "organizer" && (
+        <EventFilters onFilterChange={handleFilterChange} />
+      )}
 
-            {isLoading ? (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    {[1, 2, 3, 4, 5, 6].map((i) => (
-                        <div key={i} className="h-64 bg-muted animate-pulse rounded-lg" />
-                    ))}
-                </div>
-            ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    {events.map((event) => (
-                        <EventCard
-                            key={event._id}
-                            id={event._id}
-                            title={event.title}
-                            description={event.description}
-                            category={event.category}
-                            eventType={event.eventType}
-                            date={new Date(event.date)}
-                            time={event.time}
-                            location={event.location}
-                            capacity={event.capacity}
-                            registeredCount={event.registeredCount}
-                            imageUrl={event.image || businessEvent}
-                            isVirtual={event.isVirtual}
-                            organizerName={event.organizer.name}
-                            onRegister={() => setLocation(`/events/${event._id}`)}
-                            onViewDetails={() => setLocation(`/events/${event._id}`)}
-                        />
-                    ))}
-                </div>
-            )}
-
-            {!isLoading && events.length === 0 && (
-                <div className="text-center py-12">
-                    <p className="text-muted-foreground">
-                        {user?.role === 'organizer' 
-                            ? 'You haven\'t created any events yet' 
-                            : 'No events found matching your filters'
-                        }
-                    </p>
-                    {user?.role === 'organizer' && (
-                        <Button 
-                            className="mt-4" 
-                            onClick={() => setLocation('/create-event')}
-                        >
-                            Create Your First Event
-                        </Button>
-                    )}
-                </div>
-            )}
+      {isLoading ? (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {[1, 2, 3, 4, 5, 6].map((i) => (
+            <div key={i} className="h-64 bg-muted animate-pulse rounded-lg" />
+          ))}
         </div>
-    );
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {events.map((event) => (
+            <EventCard
+              key={event._id}
+              id={event._id}
+              title={event.title}
+              description={event.description}
+              category={event.category}
+              eventType={event.eventType}
+              date={new Date(event.date)}
+              time={event.time}
+              location={event.location}
+              capacity={event.capacity}
+              registeredCount={event.registeredCount}
+              imageUrl={event.image || businessEvent}
+              isVirtual={event.isVirtual}
+              organizerName={event.organizer.name}
+              onRegister={() => setLocation(`/events/${event._id}`)}
+              onViewDetails={() => setLocation(`/events/${event._id}`)}
+              showRegisterButton={user?.role !== "organizer"}
+            />
+          ))}
+        </div>
+      )}
+
+      {!isLoading && events.length === 0 && (
+        <div className="text-center py-12">
+          <p className="text-muted-foreground">
+            {user?.role === "organizer"
+              ? "You haven't created any events yet"
+              : "No events found matching your filters"}
+          </p>
+          {user?.role === "organizer" && (
+            <Button
+              className="mt-4"
+              onClick={() => setLocation("/create-event")}
+            >
+              Create Your First Event
+            </Button>
+          )}
+        </div>
+      )}
+    </div>
+  );
 }
 
 function EventDetailsPage({ params }: { params: { id: string } }) {
-    const { user } = useAuth();
-    const [, setLocation] = useLocation();
-    const { data: eventData, isLoading } = useEvent(params.id);
-    const { data: registrationsData } = useMyRegistrations();
-    const registerMutation = useRegisterForEvent();
-    const cancelMutation = useCancelRegistration();
-    const deleteMutation = useDeleteEvent();
-    const { toast } = useToast();
+  const { user } = useAuth();
+  const [, setLocation] = useLocation();
+  const { data: eventData, isLoading } = useEvent(params.id);
+  const { data: registrationsData } = useMyRegistrations();
+  const registerMutation = useRegisterForEvent();
+  const cancelMutation = useCancelRegistration();
+  const deleteMutation = useDeleteEvent();
+  const { toast } = useToast();
 
-    if (isLoading) {
-        return (
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-                <div className="animate-pulse space-y-4">
-                    <div className="h-64 bg-muted rounded-lg" />
-                    <div className="h-8 bg-muted rounded w-3/4" />
-                    <div className="h-4 bg-muted rounded w-1/2" />
-                </div>
-            </div>
-        );
-    }
+  if (isLoading) {
+    return (
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="animate-pulse space-y-4">
+          <div className="h-64 bg-muted rounded-lg" />
+          <div className="h-8 bg-muted rounded w-3/4" />
+          <div className="h-4 bg-muted rounded w-1/2" />
+        </div>
+      </div>
+    );
+  }
 
-    if (!eventData?.success || !eventData.event) {
-        return (
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-                <div className="text-center">
-                    <h1 className="text-2xl font-bold mb-4">Event not found</h1>
-                    <p className="text-muted-foreground">The event you're looking for doesn't exist.</p>
-                </div>
-            </div>
-        );
-    }
+  if (!eventData?.success || !eventData.event) {
+    return (
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="text-center">
+          <h1 className="text-2xl font-bold mb-4">Event not found</h1>
+          <p className="text-muted-foreground">
+            The event you're looking for doesn't exist.
+          </p>
+        </div>
+      </div>
+    );
+  }
 
-    const event = eventData.event;
-    const isEventOrganizer = user && event.organizer._id === user.id;
-    const isRegistered = registrationsData?.registrations?.some(
-        reg => reg.event._id === event._id
+  const event = eventData.event;
+  const isEventOrganizer = user && event.organizer._id === user.id;
+  const isRegistered =
+    registrationsData?.registrations?.some(
+      (reg) => reg.event && reg.event._id === event._id
     ) || false;
 
-    const handleRegister = async () => {
-        if (!user) {
-            setLocation('/login');
-            return;
-        }
+  const handleRegister = async () => {
+    if (!user) {
+      setLocation("/login");
+      return;
+    }
 
-        // Prevent organizers from registering for any events
-        if (user.role === 'organizer') {
-            toast({
-                title: "Action not allowed",
-                description: "Organizers cannot register for events. You can only manage your own events.",
-                variant: "destructive",
-            });
-            return;
-        }
+    // Prevent organizers from registering for any events
+    if (user.role === "organizer") {
+      toast({
+        title: "Action not allowed",
+        description:
+          "Organizers cannot register for events. You can only manage your own events.",
+        variant: "destructive",
+      });
+      return;
+    }
 
-        try {
-            await registerMutation.mutateAsync({ eventId: event._id });
-            toast({
-                title: "Registration successful!",
-                description: "You have been registered for this event.",
-            });
-        } catch (error) {
-            console.error('Registration failed:', error);
-        }
-    };
+    try {
+      await registerMutation.mutateAsync({ eventId: event._id });
+      toast({
+        title: "Registration successful!",
+        description: "You have been registered for this event.",
+      });
+    } catch (error) {
+      console.error("Registration failed:", error);
+    }
+  };
 
-    const handleCancelRegistration = async () => {
-        try {
-            await cancelMutation.mutateAsync(event._id);
-            toast({
-                title: "Registration cancelled",
-                description: "Your registration has been cancelled.",
-            });
-        } catch (error) {
-            console.error('Cancellation failed:', error);
-        }
-    };
+  const handleCancelRegistration = async () => {
+    try {
+      await cancelMutation.mutateAsync(event._id);
+      toast({
+        title: "Registration cancelled",
+        description: "Your registration has been cancelled.",
+      });
+    } catch (error) {
+      console.error("Cancellation failed:", error);
+    }
+  };
 
-    const handleDeleteEvent = async () => {
-        if (!window.confirm('Are you sure you want to delete this event? This action cannot be undone.')) {
-            return;
-        }
+  const handleDeleteEvent = async () => {
+    if (
+      !window.confirm(
+        "Are you sure you want to delete this event? This action cannot be undone."
+      )
+    ) {
+      return;
+    }
 
-        try {
-            await deleteMutation.mutateAsync(event._id);
-            toast({
-                title: "Event deleted",
-                description: "Your event has been successfully deleted.",
-            });
-            setLocation('/events');
-        } catch (error) {
-            console.error('Delete failed:', error);
-            toast({
-                title: "Delete failed",
-                description: "Failed to delete the event. Please try again.",
-                variant: "destructive",
-            });
-        }
-    };
+    try {
+      await deleteMutation.mutateAsync(event._id);
+      toast({
+        title: "Event deleted",
+        description: "Your event has been successfully deleted.",
+      });
+      setLocation("/events");
+    } catch (error) {
+      console.error("Delete failed:", error);
+      toast({
+        title: "Delete failed",
+        description: "Failed to delete the event. Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
 
-    // Determine which action to show based on user role and relationship to event
-    const getEventAction = () => {
-        if (!user) {
-            return 'login-required';
-        }
-        
-        if (isEventOrganizer) {
-            return 'delete';
-        }
-        
-        if (user.role === 'organizer') {
-            return 'organizer-no-register';
-        }
-        
-        if (isRegistered) {
-            return 'cancel-registration';
-        }
-        
-        if (event.registeredCount >= event.capacity) {
-            return 'waitlist';
-        }
-        
-        return 'register';
-    };
+  // Determine which action to show based on user role and relationship to event
+  const getEventAction = () => {
+    if (!user) {
+      return "login-required";
+    }
 
-    const eventAction = getEventAction();
+    if (isEventOrganizer) {
+      return "delete";
+    }
 
-    return (
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-            <EventDetailsView
-                event={{
-                    id: event._id,
-                    title: event.title,
-                    description: event.description,
-                    category: event.category,
-                    eventType: event.eventType,
-                    date: new Date(event.date),
-                    time: event.time,
-                    location: event.location,
-                    capacity: event.capacity,
-                    registeredCount: event.registeredCount,
-                    imageUrl: event.image || businessEvent,
-                    isVirtual: event.isVirtual,
-                    isPrivate: event.accessControl.isPrivate,
-                    tags: event.tags,
-                    organizer: {
-                        name: event.organizer.name,
-                        email: event.organizer.email,
-                    },
-                }}
-                isRegistered={isRegistered}
-                canRegister={eventAction === 'register'}
-                eventAction={eventAction}
-                onRegister={handleRegister}
-                onCancelRegistration={handleCancelRegistration}
-                onDeleteEvent={handleDeleteEvent}
-            />
-        </div>
-    );
+    if (user.role === "organizer") {
+      return "organizer-no-register";
+    }
+
+    if (isRegistered) {
+      return "cancel-registration";
+    }
+
+    if (event.registeredCount >= event.capacity) {
+      return "waitlist";
+    }
+
+    return "register";
+  };
+
+  const eventAction = getEventAction();
+
+  return (
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <EventDetailsView
+        event={{
+          id: event._id,
+          title: event.title,
+          description: event.description,
+          category: event.category,
+          eventType: event.eventType,
+          date: new Date(event.date),
+          time: event.time,
+          location: event.location,
+          capacity: event.capacity,
+          registeredCount: event.registeredCount,
+          imageUrl: event.image || businessEvent,
+          isVirtual: event.isVirtual,
+          isPrivate: event.accessControl.isPrivate,
+          tags: event.tags,
+          organizer: {
+            name: event.organizer.name,
+            email: event.organizer.email,
+          },
+        }}
+        isRegistered={isRegistered}
+        canRegister={eventAction === "register"}
+        eventAction={eventAction}
+        onRegister={handleRegister}
+        onCancelRegistration={handleCancelRegistration}
+        onDeleteEvent={handleDeleteEvent}
+      />
+    </div>
+  );
 }
 
 function AttendeeDashboard() {
-    const { data: registrationsData, isLoading } = useMyRegistrations();
-    const registrations = registrationsData?.registrations || [];
+  const { data: registrationsData, isLoading } = useMyRegistrations();
+  const registrations = registrationsData?.registrations || [];
 
-    return (
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
-            <div>
-                <h1 className="text-3xl font-bold mb-2">My Dashboard</h1>
-                <p className="text-muted-foreground">Manage your event registrations</p>
-            </div>
+  return (
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
+      <div>
+        <h1 className="text-3xl font-bold mb-2">My Dashboard</h1>
+        <p className="text-muted-foreground">Manage your event registrations</p>
+      </div>
 
-            <DashboardStats
-                role="attendee"
-                stats={{
-                    registeredEvents: registrations.length,
-                    upcomingEvents: registrations.filter(r => new Date(r.event.date) > new Date()).length,
-                    totalEvents: registrations.length,
-                }}
-            />
+      <DashboardStats
+        role="attendee"
+        stats={{
+          registeredEvents: registrations.length,
+          upcomingEvents: registrations.filter(
+            (r) => new Date(r.event.date) > new Date()
+          ).length,
+          totalEvents: registrations.length,
+        }}
+      />
 
-            <div>
-                <h2 className="text-xl font-semibold mb-4">My Registered Events</h2>
-                {isLoading ? (
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                        {[1, 2, 3].map((i) => (
-                            <div key={i} className="h-64 bg-muted animate-pulse rounded-lg" />
-                        ))}
-                    </div>
-                ) : (
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                        {registrations.map((registration) => (
-                            <EventCard
-                                key={registration._id}
-                                id={registration.event._id}
-                                title={registration.event.title}
-                                description={registration.event.description}
-                                category={registration.event.category}
-                                eventType={registration.event.eventType}
-                                date={new Date(registration.event.date)}
-                                time={registration.event.time}
-                                location={registration.event.location}
-                                capacity={registration.event.capacity}
-                                registeredCount={registration.event.registeredCount}
-                                imageUrl={registration.event.image || businessEvent}
-                                isVirtual={registration.event.isVirtual}
-                                organizerName={registration.event.organizer.name}
-                                onRegister={() => { }}
-                                onViewDetails={() => window.location.href = `/events/${registration.event._id}`}
-                            />
-                        ))}
-                    </div>
-                )}
-            </div>
-        </div>
-    );
+      <div>
+        <h2 className="text-xl font-semibold mb-4">My Registered Events</h2>
+        {isLoading ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {[1, 2, 3].map((i) => (
+              <div key={i} className="h-64 bg-muted animate-pulse rounded-lg" />
+            ))}
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {registrations.map((registration) => (
+              <EventCard
+                key={registration._id}
+                id={registration.event._id}
+                title={registration.event.title}
+                description={registration.event.description}
+                category={registration.event.category}
+                eventType={registration.event.eventType}
+                date={new Date(registration.event.date)}
+                time={registration.event.time}
+                location={registration.event.location}
+                capacity={registration.event.capacity}
+                registeredCount={registration.event.registeredCount}
+                imageUrl={registration.event.image || businessEvent}
+                isVirtual={registration.event.isVirtual}
+                organizerName={registration.event.organizer.name}
+                onRegister={() => {}}
+                onViewDetails={() =>
+                  (window.location.href = `/events/${registration.event._id}`)
+                }
+                showRegisterButton={false}
+              />
+            ))}
+          </div>
+        )}
+      </div>
+    </div>
+  );
 }
 
 function OrganizerDashboard() {
-    const [, setLocation] = useLocation();
-    const { data: eventsData, isLoading } = useMyEvents();
-    const deteMutation = useDeleteEvent();
-    const { toast } = useToast();
-    const events = eventsData?.events || [];
+  const [, setLocation] = useLocation();
+  const { data: eventsData, isLoading } = useMyEvents();
+  const deleteMutation = useDeleteEvent();
+  const { toast } = useToast();
+  const events = eventsData?.events || [];
 
-    const organizerEvents = events.map(e => ({
-        id: e._id,
-        title: e.title,
-        date: new Date(e.date),
-        status: e.status as 'draft' | 'published' | 'cancelled' | 'completed',
-        registeredCount: e.registeredCount,
-        capacity: e.capacity,
-    }));
+  const organizerEvents = events.map((e) => ({
+    id: e._id,
+    title: e.title,
+    date: new Date(e.date),
+    status: e.status as "draft" | "published" | "cancelled" | "completed",
+    registeredCount: e.registeredCount,
+    capacity: e.capacity,
+  }));
 
+  const handleDeleteEvent = async (id: string) => {
+    if (
+      !window.confirm(
+        "Are you sure you want to delete this event? This action cannot be undone."
+      )
+    ) {
+      return;
+    }
 
+    try {
+      await deleteMutation.mutateAsync(id);
+      toast({
+        title: "Event deleted",
+        description: "Your event has been successfully deleted.",
+      });
+    } catch (error) {
+      console.error("Delete failed:", error);
+      toast({
+        title: "Delete failed",
+        description: "Failed to delete the event. Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
 
-    return (
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
-            <div className="flex items-center justify-between">
-                <div>
-                    <h1 className="text-3xl font-bold mb-2">Organizer Dashboard</h1>
-                    <p className="text-muted-foreground">Manage your events and attendees</p>
-                </div>
-                <Button onClick={() => setLocation('/create-event')} data-testid="button-create-event">
-                    Create Event
-                </Button>
-            </div>
-
-            <DashboardStats
-                role="organizer"
-                stats={{
-                    totalEvents: events.length,
-                    totalAttendees: events.reduce((sum, e) => sum + e.registeredCount, 0),
-                    activeEvents: events.filter(e => e.status === 'published').length,
-                    upcomingEvents: events.filter(e => new Date(e.date) > new Date()).length,
-                }}
-            />
-
-            <div>
-                <h2 className="text-xl font-semibold mb-4">My Events</h2>
-                {isLoading ? (
-                    <div className="animate-pulse space-y-4">
-                        {[1, 2, 3].map((i) => (
-                            <div key={i} className="h-16 bg-muted rounded-lg" />
-                        ))}
-                    </div>
-                ) : (
-                    <EventManagementTable
-                        events={organizerEvents}
-                        onEdit={(id) => setLocation(`/events/${id}/edit`)}
-                        onDelete={(id) => console.log('Delete event:', id)}
-                        onViewAttendees={(id) => setLocation(`/events/${id}/attendees`)}
-                    />
-                )}
-            </div>
+  return (
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-3xl font-bold mb-2">Organizer Dashboard</h1>
+          <p className="text-muted-foreground">
+            Manage your events and attendees
+          </p>
         </div>
-    );
+        <Button
+          onClick={() => setLocation("/create-event")}
+          data-testid="button-create-event"
+        >
+          Create Event
+        </Button>
+      </div>
+
+      <DashboardStats
+        role="organizer"
+        stats={{
+          totalEvents: events.length,
+          totalAttendees: events.reduce((sum, e) => sum + e.registeredCount, 0),
+          activeEvents: events.filter((e) => e.status === "published").length,
+          upcomingEvents: events.filter((e) => new Date(e.date) > new Date())
+            .length,
+        }}
+      />
+
+      <div>
+        <h2 className="text-xl font-semibold mb-4">My Events</h2>
+        {isLoading ? (
+          <div className="animate-pulse space-y-4">
+            {[1, 2, 3].map((i) => (
+              <div key={i} className="h-16 bg-muted rounded-lg" />
+            ))}
+          </div>
+        ) : (
+          <EventManagementTable
+            events={organizerEvents}
+            onEdit={(id) => setLocation(`/events/${id}/edit`)}
+            onDelete={handleDeleteEvent}
+            onViewAttendees={(id) => setLocation(`/events/${id}/attendees`)}
+          />
+        )}
+      </div>
+    </div>
+  );
 }
 
 function CreateEventPage() {
-    const [, setLocation] = useLocation();
+  const [, setLocation] = useLocation();
 
+  return (
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <CreateEventForm
+        onSubmit={(data) => {
+          console.log("Event created:", data);
+          setLocation("/dashboard");
+        }}
+      />
+    </div>
+  );
+}
+
+function EditEventPage(props: { params: { id: string } }) {
+  const { id } = props.params;
+  const [, setLocation] = useLocation();
+  const { data: eventData, isLoading } = useEvent(id);
+  const updateMutation = useUpdateEvent();
+  const { toast } = useToast();
+  const { user } = useAuth();
+
+  if (isLoading) {
     return (
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-            <CreateEventForm
-                onSubmit={(data) => {
-                    console.log('Event created:', data);
-                    setLocation('/dashboard');
-                }}
-            />
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="animate-pulse space-y-4">
+          <div className="h-8 bg-muted rounded w-1/4" />
+          <div className="h-64 bg-muted rounded" />
         </div>
+      </div>
     );
+  }
+
+  if (!eventData?.event) {
+    return (
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="text-center">
+          <h1 className="text-2xl font-bold mb-4">Event not found</h1>
+          <Button onClick={() => setLocation("/dashboard")}>
+            Back to Dashboard
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
+  const event = eventData.event;
+
+  // Check if user is the organizer
+  if (!user || event.organizer._id !== user.id) {
+    return (
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="text-center">
+          <h1 className="text-2xl font-bold mb-4">Unauthorized</h1>
+          <p className="text-muted-foreground mb-4">
+            You don't have permission to edit this event.
+          </p>
+          <Button onClick={() => setLocation("/dashboard")}>
+            Back to Dashboard
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
+  const handleUpdate = async (formData: any) => {
+    try {
+      await updateMutation.mutateAsync({
+        id: event._id,
+        data: formData,
+      });
+      toast({
+        title: "Event updated!",
+        description: "Your event has been successfully updated.",
+      });
+      setLocation("/dashboard");
+    } catch (error) {
+      toast({
+        title: "Update failed",
+        description: error instanceof Error ? error.message : "Something went wrong",
+        variant: "destructive",
+      });
+    }
+  };
+
+  return (
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <h1 className="text-3xl font-bold mb-6">Edit Event</h1>
+      <CreateEventForm
+        initialData={{
+          title: event.title,
+          description: event.description,
+          category: event.category,
+          eventType: event.eventType,
+          date: event.date.split('T')[0],
+          time: event.time,
+          location: event.location,
+          capacity: event.capacity,
+          isVirtual: event.isVirtual,
+          isPrivate: event.accessControl.isPrivate,
+          accessCode: event.accessControl.accessCode || '',
+          allowedDomains: event.accessControl.allowedDomains.join(', '),
+          tags: event.tags.join(', '),
+        }}
+        onSubmit={handleUpdate}
+        isLoading={updateMutation.isPending}
+      />
+    </div>
+  );
+}
+
+function EventAttendeesPage(props: { params: { id: string } }) {
+  const { id } = props.params;
+  const [, setLocation] = useLocation();
+  const { data: eventData } = useEvent(id);
+  const { data: attendeesData, isLoading } = useEventAttendees(id);
+  const { user } = useAuth();
+
+  if (!eventData?.event) {
+    return (
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="text-center">
+          <h1 className="text-2xl font-bold mb-4">Event not found</h1>
+          <Button onClick={() => setLocation("/dashboard")}>
+            Back to Dashboard
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
+  const event = eventData.event;
+
+  // Check if user is the organizer
+  if (!user || event.organizer._id !== user.id) {
+    return (
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="text-center">
+          <h1 className="text-2xl font-bold mb-4">Unauthorized</h1>
+          <p className="text-muted-foreground mb-4">
+            You don't have permission to view attendees for this event.
+          </p>
+          <Button onClick={() => setLocation("/dashboard")}>
+            Back to Dashboard
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
+  const attendees = attendeesData?.attendees || [];
+
+  return (
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="mb-6">
+        <Button variant="ghost" onClick={() => setLocation("/dashboard")}>
+          ← Back to Dashboard
+        </Button>
+      </div>
+
+      <div className="mb-6">
+        <h1 className="text-3xl font-bold mb-2">{event.title}</h1>
+        <p className="text-muted-foreground">
+          Attendees ({attendeesData?.totalCount || 0} registered)
+        </p>
+      </div>
+
+      {isLoading ? (
+        <div className="animate-pulse space-y-4">
+          {[1, 2, 3].map((i) => (
+            <div key={i} className="h-16 bg-muted rounded-lg" />
+          ))}
+        </div>
+      ) : attendees.length === 0 ? (
+        <div className="text-center py-12 bg-muted/50 rounded-lg">
+          <p className="text-muted-foreground">No attendees registered yet</p>
+        </div>
+      ) : (
+        <div className="bg-card border rounded-lg overflow-hidden">
+          <table className="w-full">
+            <thead className="bg-muted">
+              <tr>
+                <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                  Name
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                  Email
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                  Registration Date
+                </th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-border">
+              {attendees.map((attendee: any, index: number) => (
+                <tr key={index} className="hover:bg-muted/50">
+                  <td className="px-6 py-4 whitespace-nowrap">{attendee.name}</td>
+                  <td className="px-6 py-4 whitespace-nowrap">{attendee.email}</td>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    {new Date(attendee.registrationDate).toLocaleDateString()}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+    </div>
+  );
 }
 
 function Router() {
-    const { user, isAuthenticated, logout } = useAuth();
+  const { user, isAuthenticated, logout } = useAuth();
 
-    return (
-        <div className="min-h-screen flex flex-col">
-            <Header
-                isAuthenticated={isAuthenticated}
-                userRole={user?.role || 'attendee'}
-                userName={user?.name || ''}
-                onLogout={logout}
-            />
-            <main className="flex-1 flex flex-col">
-                <Switch>
-                    <Route path="/" component={HomePage} />
-                    <Route path="/events" component={EventsPage} />
-                    <Route path="/events/:id" component={EventDetailsPage} />
-                    <Route path="/about" component={About} />
-                    <Route path="/login">
-                        <LoginForm />
-                    </Route>
-                    <Route path="/register">
-                        <RegisterForm />
-                    </Route>
-                    <Route path="/dashboard">
-                        {user?.role === 'organizer' ? <OrganizerDashboard /> : <AttendeeDashboard />}
-                    </Route>
-                    <Route path="/create-event" component={CreateEventPage} />
-                    <Route path="/forgot-password" component={ForgotPasswordForm} />
-                    <Route path="/reset-password/:token">
-                        {(params) => <ResetPasswordForm token={params.token} />}
-                    </Route>
-                    <Route>
-                        <div className="flex-1 flex items-center justify-center">
-                            <div className="text-center">
-                                <h1 className="text-4xl font-bold mb-4">404</h1>
-                                <p className="text-muted-foreground">Page not found</p>
-                            </div>
-                        </div>
-                    </Route>
-                </Switch>
-            </main>
-            <Footer />
-            <Toaster />
-        </div>
-    );
+  return (
+    <div className="min-h-screen flex flex-col">
+      <Header
+        isAuthenticated={isAuthenticated}
+        userRole={user?.role || "attendee"}
+        userName={user?.name || ""}
+        onLogout={logout}
+      />
+      <main className="flex-1 flex flex-col">
+        <Switch>
+          <Route path="/" component={HomePage} />
+          <Route path="/events" component={EventsPage} />
+          <Route path="/events/:id/edit" component={EditEventPage} />
+          <Route path="/events/:id/attendees" component={EventAttendeesPage} />
+          <Route path="/events/:id" component={EventDetailsPage} />
+          <Route path="/about" component={About} />
+          <Route path="/login">
+            <LoginForm />
+          </Route>
+          <Route path="/register">
+            <RegisterForm />
+          </Route>
+          <Route path="/dashboard">
+            {user?.role === "organizer" ? (
+              <OrganizerDashboard />
+            ) : (
+              <AttendeeDashboard />
+            )}
+          </Route>
+          <Route path="/create-event" component={CreateEventPage} />
+          <Route path="/forgot-password" component={ForgotPasswordForm} />
+          <Route path="/reset-password/:token">
+            {(params) => <ResetPasswordForm token={params.token} />}
+          </Route>
+          <Route>
+            <div className="flex-1 flex items-center justify-center">
+              <div className="text-center">
+                <h1 className="text-4xl font-bold mb-4">404</h1>
+                <p className="text-muted-foreground">Page not found</p>
+              </div>
+            </div>
+          </Route>
+        </Switch>
+      </main>
+      <Footer />
+      <Toaster />
+    </div>
+  );
 }
 
 function App() {
-    return (
-        <QueryClientProvider client={queryClient}>
-            <TooltipProvider>
-                <AuthProvider>
-                    <Router />
-                </AuthProvider>
-            </TooltipProvider>
-        </QueryClientProvider>
-    );
+  return (
+    <QueryClientProvider client={queryClient}>
+      <TooltipProvider>
+        <AuthProvider>
+          <Router />
+        </AuthProvider>
+      </TooltipProvider>
+    </QueryClientProvider>
+  );
 }
 
 export default App;

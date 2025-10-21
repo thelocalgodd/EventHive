@@ -5,10 +5,10 @@ import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
-import { Calendar } from "lucide-react";
+import { Calendar, Upload, X } from "lucide-react";
 import { useState } from "react";
 import { useLocation } from "wouter";
-import { useCreateEvent } from "../hooks/useEvents"; 
+import { useCreateEvent } from "../hooks/useEvents";
 import { useToast } from "@/hooks/use-toast";
 import type { CreateEventForm as CreateEventFormType } from "../types/api";
 
@@ -61,16 +61,56 @@ export function CreateEventForm({ onSubmit, initialData, isLoading }: CreateEven
     tags: initialData?.tags || '',
   });
 
+  const [imageBase64, setImageBase64] = useState<string | null>(null);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
+
   const createEventMutation = useCreateEvent();
   const [, setLocation] = useLocation();
   const { toast } = useToast();
+
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      if (file.size > 5 * 1024 * 1024) {
+        toast({
+          title: "File too large",
+          description: "Image must be less than 5MB",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      // Validate file type
+      if (!file.type.startsWith('image/')) {
+        toast({
+          title: "Invalid file type",
+          description: "Please upload an image file",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        const base64String = reader.result as string;
+        setImageBase64(base64String);
+        setImagePreview(base64String);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const removeImage = () => {
+    setImageBase64(null);
+    setImagePreview(null);
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     try {
-      // Transform form data to match API format
-      const eventData: CreateEventFormType = {
+      // Transform form data to match API format and include image
+      const eventData = {
         title: formData.title,
         description: formData.description,
         category: formData.category,
@@ -89,6 +129,7 @@ export function CreateEventForm({ onSubmit, initialData, isLoading }: CreateEven
             ? formData.allowedDomains.split(',').map(domain => domain.trim())
             : [],
         },
+        image: imageBase64 || undefined,
       };
 
       await createEventMutation.mutateAsync(eventData);
@@ -304,6 +345,51 @@ export function CreateEventForm({ onSubmit, initialData, isLoading }: CreateEven
                 data-testid="input-tags"
               />
               <p className="text-xs text-muted-foreground">Comma-separated tags</p>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="image">Event Image (optional)</Label>
+              <div className="flex flex-col gap-4">
+                {imagePreview ? (
+                  <div className="relative rounded-lg overflow-hidden border">
+                    <img
+                      src={imagePreview}
+                      alt="Event preview"
+                      className="w-full h-48 object-cover"
+                    />
+                    <button
+                      type="button"
+                      onClick={removeImage}
+                      className="absolute top-2 right-2 p-1 bg-destructive text-destructive-foreground rounded-full hover:bg-destructive/90"
+                    >
+                      <X className="h-4 w-4" />
+                    </button>
+                  </div>
+                ) : (
+                  <label
+                    htmlFor="image"
+                    className="flex flex-col items-center justify-center w-full h-48 border-2 border-dashed rounded-lg cursor-pointer hover:bg-muted/50 transition-colors"
+                  >
+                    <div className="flex flex-col items-center justify-center pt-5 pb-6">
+                      <Upload className="h-10 w-10 text-muted-foreground mb-2" />
+                      <p className="text-sm text-muted-foreground">
+                        <span className="font-semibold">Click to upload</span> or drag and drop
+                      </p>
+                      <p className="text-xs text-muted-foreground mt-1">
+                        PNG, JPG or GIF (MAX. 5MB)
+                      </p>
+                    </div>
+                    <Input
+                      id="image"
+                      type="file"
+                      accept="image/*"
+                      onChange={handleImageChange}
+                      className="hidden"
+                      data-testid="input-image"
+                    />
+                  </label>
+                )}
+              </div>
             </div>
 
             <div className="flex gap-4 pt-4">

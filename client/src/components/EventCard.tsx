@@ -20,6 +20,7 @@ interface EventCardProps {
   organizerName: string;
   onRegister?: (id: string) => void;
   onViewDetails?: (id: string) => void;
+  showRegisterButton?: boolean;
 }
 
 export function EventCard({
@@ -38,6 +39,7 @@ export function EventCard({
   organizerName,
   onRegister,
   onViewDetails,
+  showRegisterButton = true,
 }: EventCardProps) {
   const spotsLeft = capacity - registeredCount;
   const percentFull = (registeredCount / capacity) * 100;
@@ -113,20 +115,22 @@ export function EventCard({
       <CardFooter className="flex gap-2">
         <Button
           variant="outline"
-          className="flex-1"
+          className={showRegisterButton ? "flex-1" : "w-full"}
           onClick={() => onViewDetails?.(id)}
           data-testid={`button-view-details-${id}`}
         >
           View Details
         </Button>
-        <Button
-          className="flex-1"
-          onClick={() => onRegister?.(id)}
-          disabled={spotsLeft === 0}
-          data-testid={`button-register-${id}`}
-        >
-          {spotsLeft === 0 ? 'Full' : 'Register'}
-        </Button>
+        {showRegisterButton && (
+          <Button
+            className="flex-1"
+            onClick={() => onRegister?.(id)}
+            disabled={spotsLeft === 0}
+            data-testid={`button-register-${id}`}
+          >
+            {spotsLeft === 0 ? 'Full' : 'Register'}
+          </Button>
+        )}
       </CardFooter>
     </Card>
   );

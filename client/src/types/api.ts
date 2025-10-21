@@ -122,4 +122,5 @@ export interface EventFilters {
   category?: string;
   eventType?: string;
   status?: string;
+  upcoming?: string;
 }

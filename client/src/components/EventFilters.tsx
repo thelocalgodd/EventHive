@@ -40,12 +40,18 @@ const statuses = [
   'Cancelled',
 ];
 
+const timeFilters = [
+  'All Events',
+  'Upcoming Only',
+];
+
 export function EventFilters({ onFilterChange }: EventFiltersProps) {
   const [filters, setFilters] = useState({
     search: '',
     category: 'All Categories',
     eventType: 'All Types',
     status: 'All Status',
+    timeFilter: 'All Events',
   });
 
   const handleFilterChange = (key: string, value: string) => {
@@ -58,6 +64,7 @@ export function EventFilters({ onFilterChange }: EventFiltersProps) {
     if (newFilters.category !== 'All Categories') apiFilters.category = newFilters.category;
     if (newFilters.eventType !== 'All Types') apiFilters.eventType = newFilters.eventType.toLowerCase();
     if (newFilters.status !== 'All Status') apiFilters.status = newFilters.status.toLowerCase();
+    if (newFilters.timeFilter === 'Upcoming Only') apiFilters.upcoming = 'true';
 
     onFilterChange?.(apiFilters);
   };
@@ -68,6 +75,7 @@ export function EventFilters({ onFilterChange }: EventFiltersProps) {
       category: 'All Categories',
       eventType: 'All Types',
       status: 'All Status',
+      timeFilter: 'All Events',
     };
     setFilters(resetFilters);
     onFilterChange?.({});
@@ -80,7 +88,7 @@ export function EventFilters({ onFilterChange }: EventFiltersProps) {
         <h3 className="font-semibold">Filters</h3>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
         <div className="relative">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input
@@ -136,6 +144,22 @@ export function EventFilters({ onFilterChange }: EventFiltersProps) {
             {statuses.map((status) => (
               <SelectItem key={status} value={status}>
                 {status}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+
+        <Select
+          value={filters.timeFilter}
+          onValueChange={(value) => handleFilterChange('timeFilter', value)}
+        >
+          <SelectTrigger data-testid="select-time-filter">
+            <SelectValue placeholder="Time Filter" />
+          </SelectTrigger>
+          <SelectContent>
+            {timeFilters.map((filter) => (
+              <SelectItem key={filter} value={filter}>
+                {filter}
               </SelectItem>
             ))}
           </SelectContent>

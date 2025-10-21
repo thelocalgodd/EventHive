@@ -1,4 +1,3 @@
-// Shared types between frontend and backend
 export interface User {
   id: string;
   name: string;
